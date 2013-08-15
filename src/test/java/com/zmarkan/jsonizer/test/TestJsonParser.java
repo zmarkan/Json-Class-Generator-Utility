@@ -15,9 +15,10 @@ import com.zmarkan.jsonizer.parser.JSONParser;
 public class TestJsonParser {
 
 	JSONParser parser; 
+	String exampleJson = "{ \"user\": \"zan\", \"number\": 42, \"double\": 10.002 }";
 	@Before
 	public void setUp() throws Exception {
-		parser = new JSONParser(JSONParser.exampleJson);
+		parser = new JSONParser(exampleJson);
 	}
 
 	@After
@@ -27,8 +28,19 @@ public class TestJsonParser {
 	@Test
 	public void testCheckJsonAndFindCommands() {
 
-		ArrayList<JsonizerCommand> commandsList = parser.checkJsonAndFindCommands(new StringBuilder(JSONParser.exampleJson));
-		assertEquals("Commands list size should be 1! ", 1, commandsList.size());
+		ArrayList<JsonizerCommand> commandsList = parser.checkJsonAndFindCommands(new StringBuilder(exampleJson));
+		assertEquals("Commands list size should be 3! ", 3, commandsList.size());
+		
+		assertEquals("First name should be user!", "user", commandsList.get(0).fieldName);
+		assertEquals("First type should be String!", CommandType.STRING, commandsList.get(0).type);
+		
+		assertEquals("First name should be number!", "number", commandsList.get(1).fieldName);
+		assertEquals("First type should be long!", CommandType.LONG, commandsList.get(1).type);
+		
+		assertEquals("First name should be user!", "double", commandsList.get(2).fieldName);
+		assertEquals("First type should be double!", CommandType.DOUBLE, commandsList.get(2).type);
+
+		
 	}
 	
 	@Test

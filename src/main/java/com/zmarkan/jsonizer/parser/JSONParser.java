@@ -17,7 +17,6 @@ public class JSONParser {
 	public static final String COLON = ":";
 	public static final String JSON_NULL = "null";
 	
-	public static final String exampleJson = "{ \"user\": \"zan\", \"number\": 42, \"double\": 10.002 }";
 
 	String completeJson;
 	public JSONParser(String jsonString){
@@ -38,34 +37,42 @@ public class JSONParser {
 		
 		boolean eof = false;
 		int currentPosition = 0;
+		int newPosition = 0;
+		String currentFieldName;
+		String currentFieldValues;
+		
+		//find first name
+		
+		
 		while(!eof){
-			//find first name
-			currentPosition = stringBuilder.indexOf(QUOTATION);
-			int newPosition = stringBuilder.indexOf(QUOTATION, currentPosition+1);
 			
-			String currentFieldName = stringBuilder.substring(currentPosition+1, newPosition).trim();
+			currentPosition = stringBuilder.indexOf(QUOTATION, currentPosition);
+			newPosition = stringBuilder.indexOf(QUOTATION, currentPosition+1);
+			
+			currentFieldName = stringBuilder.substring(currentPosition+1, newPosition).trim();
 			
 			//get the item
 			currentPosition = stringBuilder.indexOf(COLON, newPosition) +1;
 			newPosition = stringBuilder.indexOf(COMMA, currentPosition);
 			
-			String currentFieldValues = stringBuilder.substring(currentPosition, newPosition).trim();
-			System.out.println(currentFieldName);
-			System.out.println(currentFieldValues);
+			//we might be at the last element
+			if(newPosition < 0 ){
+				newPosition = stringBuilder.indexOf(BRACKET_CLOSE, currentPosition);
+				eof = true;
+			}
+
 			
-			commandsList.add(JsonizerCommandFactory.getNewCommand(CommandType.STRING, currentFieldName));
+			currentFieldValues = stringBuilder.substring(currentPosition, newPosition).trim();			
+			commandsList.add(JsonizerCommandFactory.getNewCommand(resolveCommandType(currentFieldValues), currentFieldName));
+			System.out.println("added: name: "+ currentFieldName + " type:  "+commandsList.get(commandsList.size()-1).type);
+			currentPosition = newPosition;
 			
-			eof = true;		
 		}
-		
-		
-		
 		
 		return commandsList;
 	}
 	
 	public JsonizerCommand.CommandType resolveCommandType(String jsonElement){
-		boolean isError = false;
 		//this be string
 		if(jsonElement.startsWith(QUOTATION)){
 			System.out.println("Found a String!");
@@ -87,7 +94,7 @@ public class JSONParser {
 				return JsonizerCommand.CommandType.LONG;
 			}
 			catch(NumberFormatException e){
-				isError = true;
+				//TODO
 			}
 			
 			try{
@@ -97,7 +104,7 @@ public class JSONParser {
 				return CommandType.DOUBLE;
 			}
 			catch(NumberFormatException e){
-				isError = true;
+				//TODO
 			}
 			
 			//shouldn't get to that if only primitive types
